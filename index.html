@@ -344,7 +344,7 @@
                 <div id="stepSection1" class="bg-white rounded-3xl p-5 border border-sky-100 pastel-shadow space-y-4">
                     <h2 class="text-sm font-bold text-slate-800 flex items-center gap-2 border-b border-sky-100 pb-2">
                         <i class="fa-solid fa-camera-retro text-sky-500"></i>
-                        1. ยินดีต้อนรับสู่ Photo Booth
+ยินดีต้อนรับสู่ Photo Booth
                     </h2>
                     <p class="text-xs text-slate-500 leading-relaxed">
                         ยินดีต้อนรับสู่บริการตู้ถ่ายรูปโฟโต้บูธ! ในระบบนี้คุณสามารถ **เลือกแบบกรอบรูป** จากนั้น **ถ่ายภาพ 15 ช็อต หรือถ่ายทีละรูป** แล้วจิ้มเลือกรูปที่คุณชอบที่สุดเพื่อนำไปจัดวางลงกรอบรูปได้ตามต้องการ
@@ -370,7 +370,7 @@
                 <div id="stepSection2" class="hidden bg-white rounded-3xl p-5 border border-sky-100 pastel-shadow space-y-3">
                     <h2 class="text-sm font-bold text-slate-800 flex items-center gap-2 border-b border-sky-100 pb-2">
                         <i class="fa-solid fa-border-all text-sky-500"></i>
-                        2. เลือกแบบกรอบรูป ( Choose Frame Template )
+เลือกแบบกรอบรูป ( Choose Frame Template )
                     </h2>
                     
                     <div id="categoryTabs" class="flex gap-2 mb-3 border-b border-sky-100 pb-2 overflow-x-auto custom-scrollbar">
@@ -402,7 +402,7 @@
                     <div class="flex items-center justify-between border-b border-sky-100 pb-2">
                         <h2 class="text-sm font-bold text-slate-800 flex items-center gap-2">
                             <i class="fa-solid fa-camera text-sky-500"></i>
-                            3. ถ่ายรูป และเลือกใส่กรอบ
+ถ่ายรูป และเลือกใส่กรอบ
                         </h2>
                     </div>
 
@@ -534,7 +534,7 @@
                 <div id="stepSection4" class="hidden bg-white rounded-3xl p-5 border border-sky-100 pastel-shadow space-y-4 w-full">
                     <h2 class="text-sm font-bold text-slate-800 flex items-center gap-2 pb-2 border-b border-sky-100">
                         <i class="fa-solid fa-receipt text-sky-500"></i>
-                        4. ข้อมูลสั่งพิมพ์ และ ชำระเงิน (Customer & Payment)
+ข้อมูลสั่งพิมพ์ และ ชำระเงิน (Customer & Payment)
                     </h2>
                     
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
@@ -692,7 +692,7 @@
     <script>
         const BASE_WIDTH = 2400;
         const BASE_HEIGHT = 3600;
-        const DEFAULT_GSHEET_URL = 'https://script.google.com/macros/s/AKfycbwWykXQTaPmpvaJmN-JnWvM19csy0cGdPF3veKbJ7_Khqn-xWF9LvRZoIXeEXIPM7xGDg/exec';
+        const DEFAULT_GSHEET_URL = 'https://script.google.com/macros/s/AKfycbzrkmFWjElNgTdujkmFIi7BK49M3NWh5R0w49reW6OezJaeRPicC5WlOf6CAr44SdrNkA/exec';
 
         let currentMode = 'customer';
         let currentStep = 1; // 1: Start, 2: Select Template, 3: Capture Photos & Adjust, 4: Payment
@@ -2076,173 +2076,197 @@
             const scaleFactor = BASE_WIDTH / rect.width;
 
             if (touches && touches.length === 2) {
-                const currentDistance = getTouchDistance(touches[0], touches[1]);
-                const currentAngle = getTouchAngle(touches[0], touches[1]);
+                const newDist = getTouchDistance(touches[0], touches[1]);
+                const newAngle = getTouchAngle(touches[0], touches[1]);
 
                 if (initialTouchDistance > 0) {
-                    let newScale = initialPhotoScale * (currentDistance / initialTouchDistance);
-                    newScale = Math.max(0.2, Math.min(4, newScale));
-                    slotState.scale = newScale;
-                    document.getElementById('custZoom').value = newScale;
-
-                    let angleDiff = currentAngle - initialTouchAngle;
-                    let newRotation = (initialPhotoRotation + angleDiff) % 360;
-                    if (newRotation > 180) newRotation -= 360;
-                    if (newRotation < -180) newRotation += 360;
-                    slotState.rotation = Math.round(newRotation);
-                    document.getElementById('custRotate').value = Math.round(newRotation);
+                    let scaleRatio = newDist / initialTouchDistance;
+                    let newScale = Math.min(4, Math.max(0.2, initialPhotoScale * scaleRatio));
+                    slotState.scale = Math.round(newScale * 100) / 100;
+                    document.getElementById('custZoom').value = slotState.scale;
                 }
-            } else if (touches && touches.length === 1) {
-                const clientX = touches[0].clientX;
-                const clientY = touches[0].clientY;
-                const deltaX = (clientX - panStartX) * scaleFactor;
-                const deltaY = (clientY - panStartY) * scaleFactor;
 
-                slotState.xOffset += deltaX;
-                slotState.yOffset += deltaY;
+                let angleDiff = newAngle - initialTouchAngle;
+                let newRot = Math.round(initialPhotoRotation + angleDiff);
+                if (newRot > 180) newRot -= 360;
+                if (newRot < -180) newRot += 360;
+                slotState.rotation = newRot;
+                document.getElementById('custRotate').value = slotState.rotation;
+
+            } else {
+                const clientX = touches ? touches[0].clientX : e.clientX;
+                const clientY = touches ? touches[0].clientY : e.clientY;
+
+                const dx = (clientX - panStartX) * scaleFactor;
+                const dy = (clientY - panStartY) * scaleFactor;
+
+                slotState.xOffset += dx;
+                slotState.yOffset += dy;
 
                 panStartX = clientX;
                 panStartY = clientY;
-            } else if (!touches) {
-                const deltaX = (e.clientX - panStartX) * scaleFactor;
-                const deltaY = (e.clientY - panStartY) * scaleFactor;
-
-                slotState.xOffset += deltaX;
-                slotState.yOffset += deltaY;
-
-                panStartX = e.clientX;
-                panStartY = e.clientY;
             }
 
             drawCustomerMainCanvas();
         }
 
-        function handleEnd() {
-            isPanningCustomerPhoto = false;
-        }
+        function handleEnd() { isPanningCustomerPhoto = false; }
 
         canvasContainer.addEventListener('mousedown', handleStart);
         window.addEventListener('mousemove', handleMove);
         window.addEventListener('mouseup', handleEnd);
 
-        canvasContainer.addEventListener('touchstart', handleStart, { passive: false });
-        window.addEventListener('touchmove', handleMove, { passive: false });
+        canvasContainer.addEventListener('touchstart', handleStart, { passive: true });
+        window.addEventListener('touchmove', handleMove, { passive: true });
         window.addEventListener('touchend', handleEnd);
 
         function drawCustomerMainCanvas() {
             const canvas = document.getElementById('mainRenderCanvas');
             const ctx = canvas.getContext('2d');
-            const currentTpl = templates[activeTemplateIndex];
-
             ctx.clearRect(0, 0, BASE_WIDTH, BASE_HEIGHT);
 
-            if (!currentTpl) return;
+            const tpl = templates[activeTemplateIndex];
+            if (!tpl) return;
 
-            ctx.fillStyle = currentTpl.bgColor || '#EBF5FF';
+            ctx.fillStyle = tpl.bgColor || '#FFFFFF';
             ctx.fillRect(0, 0, BASE_WIDTH, BASE_HEIGHT);
 
-            if (currentTpl.slots && currentTpl.slots.length > 0) {
-                currentTpl.slots.forEach((slot, idx) => {
+            if (tpl.slots && tpl.slots.length > 0) {
+                tpl.slots.forEach((s, idx) => {
                     ctx.save();
-
                     ctx.beginPath();
-                    const rx = slot.x, ry = slot.y, rw = slot.w, rh = slot.h, rr = slot.radius || 0;
                     
-                    if (rr > 0) {
-                        ctx.moveTo(rx + rr, ry);
-                        ctx.lineTo(rx + rw - rr, ry);
-                        ctx.quadraticCurveTo(rx + rw, ry, rx + rw, ry + rr);
-                        ctx.lineTo(rx + rw, ry + rh - rr);
-                        ctx.quadraticCurveTo(rx + rw, ry + rh, rx + rw - rr, ry + rh);
-                        ctx.lineTo(rx + rr, ry + rh);
-                        ctx.quadraticCurveTo(rx, ry + rh, rx, ry + rh - rr);
-                        ctx.lineTo(rx, ry + rr);
-                        ctx.quadraticCurveTo(rx, ry, rx + rr, ry);
+                    const cx = s.x + s.w / 2;
+                    const cy = s.y + s.h / 2;
+                    
+                    ctx.translate(cx, cy);
+                    if (s.rotation) ctx.rotate((s.rotation * Math.PI) / 180);
+                    
+                    const rx = -s.w / 2;
+                    const ry = -s.h / 2;
+                    const r = s.radius || 0;
+
+                    if (r > 0 && ctx.roundRect) {
+                        ctx.roundRect(rx, ry, s.w, s.h, r);
                     } else {
-                        ctx.rect(rx, ry, rw, rh);
+                        ctx.rect(rx, ry, s.w, s.h);
                     }
-                    ctx.closePath();
                     ctx.clip();
 
                     const slotState = customerSlotData[idx];
                     if (slotState && slotState.img) {
+                        ctx.save();
+                        ctx.translate(slotState.xOffset || 0, slotState.yOffset || 0);
+                        if (slotState.rotation) ctx.rotate((slotState.rotation * Math.PI) / 180);
+                        
                         const img = slotState.img;
-                        const centerX = slot.x + slot.w / 2 + (slotState.xOffset || 0);
-                        const centerY = slot.y + slot.h / 2 + (slotState.yOffset || 0);
+                        const scale = slotState.scale || 1;
+                        
+                        let renderW = s.w * scale;
+                        let renderH = (img.height / img.width) * renderW;
 
-                        ctx.translate(centerX, centerY);
-                        ctx.rotate(((slotState.rotation || 0) * Math.PI) / 180);
-                        ctx.scale(slotState.scale || 1, slotState.scale || 1);
-
-                        let drawW = img.width, drawH = img.height;
-                        const aspectSlot = slot.w / slot.h;
-                        const aspectImg = img.width / img.height;
-
-                        if (aspectImg > aspectSlot) {
-                            drawH = slot.h;
-                            drawW = slot.h * aspectImg;
-                        } else {
-                            drawW = slot.w;
-                            drawH = slot.w / aspectImg;
+                        if (renderH < s.h * scale) {
+                            renderH = s.h * scale;
+                            renderW = (img.width / img.height) * renderH;
                         }
 
-                        ctx.drawImage(img, -drawW / 2, -drawH / 2, drawW, drawH);
+                        ctx.drawImage(img, -renderW / 2, -renderH / 2, renderW, renderH);
+                        ctx.restore();
                     } else {
                         ctx.fillStyle = '#E2E8F0';
-                        ctx.fillRect(slot.x, slot.y, slot.w, slot.h);
+                        ctx.fillRect(rx, ry, s.w, s.h);
                         ctx.fillStyle = '#94A3B8';
-                        ctx.font = 'bold 48px Prompt';
+                        ctx.font = 'bold 60px Prompt, sans-serif';
                         ctx.textAlign = 'center';
                         ctx.textBaseline = 'middle';
-                        ctx.fillText(`แตะเลือกรูปใส่ Slot #${idx + 1}`, slot.x + slot.w / 2, slot.y + slot.h / 2);
+                        ctx.fillText(`แตะเพื่อใส่รูป #${idx + 1}`, 0, 0);
                     }
 
                     ctx.restore();
-
-                    if (idx === activeCustomerSlotIndex) {
-                        ctx.save();
-                        ctx.strokeStyle = '#0284C7';
-                        ctx.lineWidth = 10;
-                        ctx.strokeRect(slot.x, slot.y, slot.w, slot.h);
-                        ctx.restore();
-                    }
                 });
             }
 
-            if (currentTpl.bgImage) {
-                if (loadedBgImages[currentTpl.id]) {
-                    ctx.drawImage(loadedBgImages[currentTpl.id], 0, 0, BASE_WIDTH, BASE_HEIGHT);
+            if (tpl.bgImage) {
+                const bgImg = loadedBgImages[tpl.id];
+                if (bgImg) {
+                    ctx.drawImage(bgImg, 0, 0, BASE_WIDTH, BASE_HEIGHT);
                 } else {
                     const img = new Image();
                     img.crossOrigin = "anonymous";
-                    img.src = currentTpl.bgImage;
+                    img.src = tpl.bgImage;
                     img.onload = () => {
-                        loadedBgImages[currentTpl.id] = img;
-                        ctx.drawImage(img, 0, 0, BASE_WIDTH, BASE_HEIGHT);
+                        loadedBgImages[tpl.id] = img;
+                        drawCustomerMainCanvas();
                     };
                 }
+            }
+
+            // [ปรับแก้] วาดกรอบไฮไลท์ขอบเขตของช่องที่กำลังเลือกอยู่ในตัวอย่างกรอบรูป
+            if (tpl.slots && tpl.slots[activeCustomerSlotIndex]) {
+                const s = tpl.slots[activeCustomerSlotIndex];
+                ctx.save();
+                const cx = s.x + s.w / 2;
+                const cy = s.y + s.h / 2;
+                ctx.translate(cx, cy);
+                if (s.rotation) ctx.rotate((s.rotation * Math.PI) / 180);
+                
+                const rx = -s.w / 2;
+                const ry = -s.h / 2;
+                const r = s.radius || 0;
+
+                ctx.beginPath();
+                if (r > 0 && ctx.roundRect) {
+                    ctx.roundRect(rx, ry, s.w, s.h, r);
+                } else {
+                    ctx.rect(rx, ry, s.w, s.h);
+                }
+                
+                // เส้นขอบไฮไลท์สีฟ้าสว่าง
+                ctx.strokeStyle = '#0284C7';
+                ctx.lineWidth = 16;
+                ctx.setLineDash([30, 15]); // เส้นประเพิ่มความชัดเจน
+                ctx.stroke();
+
+                // ป้ายบอก Slot ID ด้านบนช่อง
+                ctx.fillStyle = '#0284C7';
+                ctx.beginPath();
+                if (ctx.roundRect) ctx.roundRect(-80, ry - 50, 160, 50, 10);
+                else ctx.rect(-80, ry - 50, 160, 50);
+                ctx.fill();
+
+                ctx.fillStyle = '#FFFFFF';
+                ctx.font = 'bold 32px Prompt, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(`Slot #${activeCustomerSlotIndex + 1}`, 0, ry - 25);
+
+                ctx.restore();
             }
         }
 
         function downloadHighResImage() {
+            // ซ่อนไฮไลท์ชั่วคราวก่อนเซฟรูปคุณภาพสูง
+            const tempActive = activeCustomerSlotIndex;
+            activeCustomerSlotIndex = -1;
             drawCustomerMainCanvas();
+
             const canvas = document.getElementById('mainRenderCanvas');
             const link = document.createElement('a');
-            link.download = `PhotoBooth_037Studio_${Date.now()}.png`;
-            link.href = canvas.toDataURL('image/png');
+            link.download = `PhotoBooth_${Date.now()}.png`;
+            link.href = canvas.toDataURL('image/png', 1.0);
             link.click();
+
+            activeCustomerSlotIndex = tempActive;
+            drawCustomerMainCanvas();
         }
 
-        // ==========================================
-        // SUBMIT ORDER FUNCTION (UPDATED)
-        // ==========================================
         async function submitCustomerOrder() {
             const nickname = document.getElementById('custNickname').value.trim();
             const phone = document.getElementById('custPhone').value.trim();
             const qty = document.getElementById('custQuantity').value;
 
             if (!nickname || !phone) {
-                alert('กรุณากรอกชื่อ และเบอร์โทรศัพท์ให้ครบถ้วน');
+                alert('กรุณากรอกชื่อลูกค้า และ เบอร์โทรศัพท์ ให้ครบถ้วน');
                 return;
             }
 
@@ -2251,83 +2275,86 @@
                 return;
             }
 
-            const btn = document.getElementById('btnSubmitOrder');
-            btn.disabled = true;
-            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-2"></i> กำลังส่งข้อมูล...`;
+            const btnSubmit = document.getElementById('btnSubmitOrder');
+            btnSubmit.disabled = true;
+            btnSubmit.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i> กำลังส่งข้อมูล...';
 
-            // Render High Resolution Image
-            drawCustomerMainCanvas();
-            const canvas = document.getElementById('mainRenderCanvas');
-            const photoBase64 = canvas.toDataURL('image/png');
-
-            const orderNo = 'ORD-' + Math.floor(100000 + Math.random() * 900000);
             const currentTpl = templates[activeTemplateIndex];
             const pricePerSheet = (currentTpl && currentTpl.price) ? currentTpl.price : 120;
-            const subtotal = pricePerSheet * parseInt(qty);
-            const discount = appliedCoupon ? appliedCoupon.discount : 0;
-            const grandTotal = Math.max(0, subtotal - discount);
+            const subtotal = pricePerSheet * qty;
+            let discountAmount = appliedCoupon ? appliedCoupon.discount : 0;
+            const grandTotal = Math.max(0, subtotal - discountAmount);
+            const orderNo = 'ORD-' + Math.floor(100000 + Math.random() * 900000);
 
-            // Populate Modal Receipt UI
+            // ซ่อนไฮไลท์เพื่อเรนเดอร์รูปภาพความละเอียดสูงฉบับจริงส่งขึ้น Google Sheet
+            const tempActive = activeCustomerSlotIndex;
+            activeCustomerSlotIndex = -1;
+            drawCustomerMainCanvas();
+
+            const canvas = document.getElementById('mainRenderCanvas');
+            const photoBase64 = canvas.toDataURL('image/jpeg', 0.85);
+
+            activeCustomerSlotIndex = tempActive;
+            drawCustomerMainCanvas();
+
+            const payload = {
+                action: 'createOrder',
+                orderNo: orderNo,
+                nickname: nickname,
+                phone: phone,
+                templateName: currentTpl.name,
+                quantity: qty,
+                grandTotal: grandTotal,
+                couponCode: appliedCoupon ? appliedCoupon.code : '-',
+                photoBase64: photoBase64,
+                slipBase64: slipBase64
+            };
+
+            const statusEl = document.getElementById('googleSheetSyncStatus');
+            statusEl.innerHTML = '<i class="fa-solid fa-spinner animate-spin text-sky-500"></i> กำลังบันทึกข้อมูลและอัปโหลดไปยัง Google Sheet...';
+
+            // แสดง Modal ใบเสร็จ
             document.getElementById('recName').innerText = nickname;
             document.getElementById('recPhone').innerText = phone;
-            document.getElementById('recTemplate').innerText = currentTpl ? currentTpl.name : 'PhotoBooth Frame';
+            document.getElementById('recTemplate').innerText = currentTpl.name;
             document.getElementById('recQuantity').innerText = `${qty} ใบ`;
             document.getElementById('recTotal').innerText = `${grandTotal} บาท`;
             document.getElementById('recOrderNo').innerText = orderNo;
+            document.getElementById('receiptModal').classList.remove('hidden');
 
-            const syncStatusEl = document.getElementById('googleSheetSyncStatus');
-            syncStatusEl.innerHTML = `<i class="fa-solid fa-cloud-arrow-up text-sky-500 animate-bounce"></i> กำลังบันทึกข้อมูลและอัปโหลดรูปภาพไปยัง Google Sheets...`;
-
-            // Deduct Coupon Usage Count locally & sync Firebase
+            // อัปเดตสิทธิ์โค้ดส่วนลดใน Cloud
             if (appliedCoupon) {
-                const cIdx = activeCoupons.findIndex(c => c.code && c.code.toUpperCase() === appliedCoupon.code.toUpperCase());
-                if (cIdx !== -1) {
-                    activeCoupons[cIdx].usedCount = (activeCoupons[cIdx].usedCount || 0) + 1;
+                const couponIdx = activeCoupons.findIndex(c => c.code === appliedCoupon.code);
+                if (couponIdx !== -1) {
+                    activeCoupons[couponIdx].usedCount = (activeCoupons[couponIdx].usedCount || 0) + 1;
                     await updateCloudSettings({ activeCoupons: activeCoupons });
                 }
             }
 
-            // Sync with Google Sheets Web App if Configured
+            // ส่งข้อมูลไปยัง Google Sheet Web App
             if (googleSheetScriptUrl) {
                 try {
-                    const payload = {
-                        action: 'createOrder',
-                        orderNo: orderNo,
-                        customerName: nickname,
-                        phone: phone,
-                        templateName: currentTpl ? currentTpl.name : '',
-                        quantity: qty,
-                        grandTotal: grandTotal,
-                        couponCode: appliedCoupon ? appliedCoupon.code : '-',
-                        slipBase64: slipBase64,       // จะถูกเซฟใน Drive และแปลงเป็น ลิงก์สลิปโอนเงิน ใน Google Sheet
-                        photoBase64: photoBase64      // จะถูกเซฟใน Drive และแปลงเป็น ลิงก์ดาวน์โหลดรูปภาพ ใน Google Sheet
-                    };
-
                     const response = await fetch(googleSheetScriptUrl, {
                         method: 'POST',
                         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                         body: JSON.stringify(payload)
                     });
-
                     const resJson = await response.json();
-                    if (resJson && resJson.status === 'success') {
-                        syncStatusEl.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-500"></i> บันทึกข้อมูลและแนบลิงก์รูปภาพลง Google Sheet เรียบร้อยแล้ว`;
+                    if (resJson.status === 'success') {
+                        statusEl.innerHTML = '<span class="text-emerald-600 font-bold"><i class="fa-solid fa-circle-check"></i> บันทึกลง Google Sheet สำเร็จเรียบร้อย!</span>';
                     } else {
-                        syncStatusEl.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-500"></i> บันทึกรายการสั่งซื้อสำเร็จ`;
+                        statusEl.innerHTML = '<span class="text-amber-600"><i class="fa-solid fa-triangle-exclamation"></i> บันทึกข้อมูลสำเร็จ (Google Sheet ตอบรับแล้ว)</span>';
                     }
-                } catch (e) {
-                    console.error("Google Sheet Sync Error:", e);
-                    syncStatusEl.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-500"></i> บันทึกรายการสั่งซื้อสำเร็จแล้ว`;
+                } catch (err) {
+                    console.error("Google Sheet Sync Error:", err);
+                    statusEl.innerHTML = '<span class="text-amber-600"><i class="fa-solid fa-circle-info"></i> ส่งรายการสำเร็จแล้ว</span>';
                 }
             } else {
-                syncStatusEl.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-500"></i> บันทึกรายการสั่งซื้อสำเร็จแล้ว`;
+                statusEl.innerHTML = '<span class="text-slate-400">ยังไม่ได้ตั้งค่า Google Sheet Web App URL</span>';
             }
 
-            btn.disabled = false;
-            btn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> ยืนยันชำระเงินและสั่งพิมพ์`;
-
-            // Show Receipt Modal
-            document.getElementById('receiptModal').classList.remove('hidden');
+            btnSubmit.disabled = false;
+            btnSubmit.innerHTML = '<i class="fa-solid fa-paper-plane"></i> ยืนยันชำระเงินและสั่งพิมพ์';
         }
 
         function closeReceiptModal() {
@@ -2335,8 +2362,8 @@
             goToStep(1);
         }
 
-        // Initialize Application
-        window.addEventListener('load', () => {
+        // Initialize App on Load
+        window.addEventListener('DOMContentLoaded', () => {
             initCloudSettingsListener();
         });
     </script>
